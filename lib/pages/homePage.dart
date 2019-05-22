@@ -1,7 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:chat_hasura/blocs/HomeBloc.dart';
 import 'package:chat_hasura/services/graphQldata.dart';
+import 'package:chat_hasura/sock/SocketInterface.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql/internal.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:rxdart/rxdart.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -10,60 +16,33 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String operationName = "teste";
-  bool _alive = true;
-  // List<Map<String, dynamic>> nomes = List();
-  List nomes = List();
-
-  dynamic variables = const <String, dynamic>{};
-  bool waitForConnection = false;
-
-  void conectaSocket() async {
-    Stream<SubscriptionData> res;
-    SocketClient socketClient = SocketClient(
-      "ws://dart-hasura.herokuapp.com/v1alpha1/graphql",
-    );
-
-    SubscriptionRequest payload = SubscriptionRequest(
-      Operation(
-        operationName: "teste",
-        document: testSubscription,
-      ),
-    );
-    socketClient.connectionState.listen((e) {
-      print("STATUS $e");
-      if (e == SocketConnectionState.CONNECTED) {
-        res = socketClient.subscribe(payload, waitForConnection);
-        res.listen((data) {
-          print(data.data);
-          print(waitForConnection);
-        });
-      }
-    });
-    socketClient.onConnectionLost();
-
-    //operationName, testSubscription,variables
-
-
-/*       final Stream<SubscriptionData> stream = socketClient.subscribe(payload, waitForConnection);
-
-            
-            stream.listen((SubscriptionData  data){
-             // print(data);
-               setState(() {
-                List teste = data.toJson()['data']['repositories'] as List;
-               nomes = teste;
-              //  print('patients: $teste}');
-              });
-            }); */
-  }
+  HomeBloc _homeBloc;
+  //SocketInterface socketClient;
+  //BehaviorSubject<SubscriptionData> b;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _homeBloc = new HomeBloc();
+/*
+    b = new BehaviorSubject<SubscriptionData>();
 
-    conectaSocket();
+    socketClient = new SocketInterface(
+        socketClient: SocketClient(
+      "ws://nutranno.herokuapp.com/v1alpha1/graphql",
+    ));
+
+
+    final payload2 = SubscriptionRequest(
+      Operation(
+        operationName: "teste2",
+        document: testSubscription2,
+      ),
+    );
+
+    socketClient.addRequest(payload2);
+    socketClient.request("teste2", b.add);
+    */
   }
 
   @override
@@ -72,14 +51,41 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text("Chat Hasura"),
       ),
-      body: Container(
-        child: ListView.builder(
-          itemCount: nomes.length,
-          itemBuilder: (BuildContext context, int index) {
-            print(nomes[index]['name']);
-            return Text("${nomes[index]['name']}");
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: Container(
+        child: StreamBuilder(
+          stream: _homeBloc.testFlux,
+          builder:
+              (BuildContext context, AsyncSnapshot<SubscriptionData> snapshot) {
+            print("REBUILDEI");
+            if (!snapshot.hasData) 
+              return CircularProgressIndicator();
+              final String x = jsonEncode(snapshot.data.data);
+              return Container(child: Text(x));
+            
           },
         ),
+      ),
+          ),
+          Expanded(
+            child: Container(
+        child: StreamBuilder(
+          stream: _homeBloc.testFlux2,
+          builder:
+              (BuildContext context, AsyncSnapshot<SubscriptionData> snapshot) {
+            print("REBUILDEI");
+            if (!snapshot.hasData) 
+              return CircularProgressIndicator();
+              final String x = jsonEncode(snapshot.data.data);
+              return Container(child: Text(x));
+            
+          },
+        ),
+      ),
+          )
+        ],
       ),
     );
   }

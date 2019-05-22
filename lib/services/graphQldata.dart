@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-  
 
 class GraphQlObject {
   static HttpLink httpLink = HttpLink(
-    uri: 'https://dart-hasura.herokuapp.com/v1alpha1/graphql',
+    uri: 'https://nutranno.herokuapp.com/v1alpha1/graphql',
   );
   //static AuthLink authLink = AuthLink();
   static Link link = httpLink as Link;
@@ -61,9 +60,20 @@ String fetchQuery() {
 
 const String testSubscription = r'''
 		subscription teste{
-  repositories {
-    name
-    id
+   categoria {
+    category_description
+    category_id
+    category_name
+  }
+}
+
+''';
+
+const String testSubscription2 = r'''
+		subscription teste2{
+  produtos {
+    product_id
+    product_name
   }
 }
 
