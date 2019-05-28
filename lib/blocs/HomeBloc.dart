@@ -7,7 +7,7 @@ import 'package:rxdart/rxdart.dart';
 class HomeBloc {
   final socketClient = new SocketInterface(
       socketClient: SocketClient(
-    "ws://nutranno.herokuapp.com/v1alpha1/graphql",
+    "ws://dart-hasura.herokuapp.com/v1alpha1/graphql",
   ));
 
   HomeBloc() {

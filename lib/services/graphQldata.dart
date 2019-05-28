@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+
+
 class GraphQlObject {
+
+  
   static HttpLink httpLink = HttpLink(
     uri: 'https://nutranno.herokuapp.com/v1alpha1/graphql',
   );
@@ -9,10 +13,24 @@ class GraphQlObject {
   static Link link = httpLink as Link;
   ValueNotifier<GraphQLClient> client = ValueNotifier(
     GraphQLClient(
-      cache: InMemoryCache(),
+      cache: NormalizedInMemoryCache(
+      dataIdFromObject: typenameDataIdFromObject,
+    ),
       link: link,
     ),
   );
+}
+
+String typenameDataIdFromObject(Object object) {
+
+  print("${object}");
+  print("Testeeeee");
+  if (object is Map<String, Object> &&
+      object.containsKey('__typename') &&
+      object.containsKey('id')) {
+    return "${object['__typename']}/${object['id']}";
+  }
+  return null;
 }
 
 GraphQlObject graphQlObject = new GraphQlObject();
@@ -58,12 +76,24 @@ String fetchQuery() {
                                           """);
 }
 
+const String query = r'''
+		query teste3{
+  categorias {
+    nome
+    produtos {
+      id
+    }
+  }
+}
+
+''';
+
 const String testSubscription = r'''
 		subscription teste{
-   categoria {
-    category_description
-    category_id
-    category_name
+   categorias {
+    
+    id,
+    nome
   }
 }
 
@@ -72,8 +102,8 @@ const String testSubscription = r'''
 const String testSubscription2 = r'''
 		subscription teste2{
   produtos {
-    product_id
-    product_name
+    id
+    name
   }
 }
 
